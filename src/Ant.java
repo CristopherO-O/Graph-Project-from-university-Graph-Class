@@ -1,3 +1,10 @@
+/*
+ * Autor: Cristopher Resende
+ * Data: 21/11/2025
+ * Descrição: Formiga para o Problema do Caixeiro Viajante
+ */
+
+
 package src;
 
 import java.util.ArrayList;

@@ -1,10 +1,10 @@
 compile e rode no diretorio do Graph Java
 o grafo deve estar contido no Graph.txt o no Graph.gml para funcionar
 para compilar:
-    javac src/*.java
+    javac -d bin src/*.java
 
 para executar:
-    java -cp . src.Main
+    java -cp bin src.Main
 ---------------------------------------------------------------------------------
 funções:
 -Carrega o grafo de um arquivo e o desenha na tela de forma circular.
@@ -16,10 +16,11 @@ funções:
 -botao agm que mostra a arvore geradora minima e peso
 -botao FordFulkerson para calcular fluxo maximo
 -botão Minimum Cover
----------------------------------------------------------------------------------
-Atualizações:
--muita coisa da nem pra escrever tudo
 -botão de colonia de formiga instantanea
 -botão de colonia de formiga animada
 ---------------------------------------------------------------------------------
-PARA ESSE EXERCICIO CARREGAR COM A OPÇÃO GML 
+Atualizações:
+-dark mode 
+-correção no algoritimo de animar formiga
+---------------------------------------------------------------------------------
+Saida de cada iteração no terminal, caminho no visual

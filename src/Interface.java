@@ -13,6 +13,8 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.BasicStroke;
 import java.awt.image.BufferStrategy;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +75,21 @@ public class Interface extends Canvas implements Runnable{
     private List<Integer> bestAntPath = null;
     private AntColony animColony = null;
     private boolean animatingAnts = false;
+    // Tema/cores
+    private java.awt.Color backgroundColor = Color.white;
+    private java.awt.Color nodeColor = Color.blue;
+    private java.awt.Color nodeTextColor = Color.yellow;
+    private java.awt.Color edgeColor = Color.black;
+    private java.awt.Color hudColor = Color.black;
+    private java.awt.Color cameraNodeColor = Color.red;
+    private java.awt.Color animAntColor = new Color(255, 0, 0, 120);
+    private java.awt.Color bestAntColor = Color.BLUE;
+    // Controle de velocidade da animação: quantos frames por cada passo lógico
+    private int framesPerStep = 2; // 2 frames por passo -> metade da velocidade atual
+    private int animFrameCounter = 0;
+    // caminho melhor atual durante animação (atualiza conforme animColony)
+    private List<Integer> animBestPath = null;
+    private double animBestLength = Double.POSITIVE_INFINITY;
 
     // ----- Construtor -----
     public Interface(Graph graph){
@@ -166,7 +183,6 @@ public class Interface extends Canvas implements Runnable{
         });
     }
 
-
     // ----- calcula posição dos nós -----
     private HashMap<Integer, NodePos> generateNodePositions(int total) {
         HashMap<Integer, NodePos> map = new HashMap<>();
@@ -214,7 +230,7 @@ public class Interface extends Canvas implements Runnable{
         return map;
     }
 
-    // deixa o grafo mais bonito aos olhos
+    // ----- deixa o grafo mais bonito aos olhos -----
     private HashMap<Integer, NodePos> generateForceDirectedPositions(Graph graph) {
 
         int n = graph.getNodesNum();
@@ -382,8 +398,6 @@ public class Interface extends Canvas implements Runnable{
         }
     }
 
-    
-
     //----- Botao coberturaMinima
     public void calcularCobertura() {
         this.cameraNodes = VertexCoverLocalSearch.solve(graph);
@@ -393,7 +407,7 @@ public class Interface extends Canvas implements Runnable{
         System.out.println("Minimum Cover: " + cameraNodes.size());
     }
 
-    // ----- logica do botao de adicionar aresta ------
+    // ----- botao de adicionar aresta ------
     public void addArestaManual() {
         try {
             String s1 = javax.swing.JOptionPane.showInputDialog("Node 1:");
@@ -435,13 +449,18 @@ public class Interface extends Canvas implements Runnable{
 
     // ----- botao ant instantaneo -----
     public void executarAntInstantaneo() {
+        executarAntInstantaneo(100, 1.0, 3.0, 0.5, 100, 0.00001);
+    }
+
+    // ----- Versão com parâmetros -----
+    public void executarAntInstantaneo(int numIterations, double alpha, double beta, double rho, double Q, double initialPheromone) {
         AntColony colony = new AntColony(graph,
-                100,      // numIterations
-                1.0,      // alpha
-                3.0,      // beta
-                0.5,      // rho
-                100,      // Q
-                0.00001); // pheromone inicial
+                numIterations,
+                alpha,
+                beta,
+                rho,
+                Q,
+                initialPheromone);
 
         bestAntPath = colony.solveInstant();
         repaint();
@@ -449,16 +468,48 @@ public class Interface extends Canvas implements Runnable{
 
     //----- botao ant animado -----
     public void executarAntAnimado() {
+        executarAntAnimado(100, 1.0, 3.0, 0.5, 100, 0.00001);
+    }
+
+    // Versão animada com parâmetros
+    public void executarAntAnimado(int numIterations, double alpha, double beta, double rho, double Q, double initialPheromone) {
         if (animatingAnts) return;
         animColony = new AntColony(graph,
-                100,      // numIterations
-                1.0,      // alpha
-                3.0,      // beta
-                0.5,      // rho
-                100,      // Q
-                0.00001); // pheromone inicial
-        animColony.initializeAnts(); // prepara as formigas
+                numIterations,
+                alpha,
+                beta,
+                rho,
+                Q,
+                initialPheromone);
+        animColony.initializeAnts();
         animatingAnts = true;
+        animFrameCounter = 0;
+        // reset estado da melhor rota animada
+        animBestPath = null;
+        animBestLength = Double.POSITIVE_INFINITY;
+    }
+
+    // Tema escuro: true = dark, false = light
+    public void setDarkTheme(boolean dark) {
+        if (dark) {
+            backgroundColor = new Color(25, 30, 35);
+            nodeColor = new Color(0, 180, 200);
+            nodeTextColor = Color.WHITE;
+            edgeColor = new Color(100, 120, 130);
+            hudColor = Color.WHITE;
+            cameraNodeColor = new Color(255, 165, 0);
+            animAntColor = new Color(255, 140, 0);
+            bestAntColor = new Color(60, 220, 120);
+        } else {
+            backgroundColor = Color.white;
+            nodeColor = Color.blue;
+            nodeTextColor = Color.yellow;
+            edgeColor = Color.black;
+            hudColor = Color.black;
+            cameraNodeColor = Color.red;
+            animAntColor = new Color(255, 0, 0, 120);
+            bestAntColor = Color.BLUE;
+        }
     }
 
     // >>>>>>>>>>----- desenha o grafo -----<<<<<<<<<<
@@ -466,10 +517,9 @@ public class Interface extends Canvas implements Runnable{
 
         Graph drawGraph = showAGM ? agmGraph : graph; 
 
-        if (drawGraph == null) return; // caso ainda não tenha calculado a AGM
+        if (drawGraph == null) return;
 
-        // Desenhar arestas
-        g.setColor(Color.black);
+        g.setColor(edgeColor);
         for (Edge e : drawGraph.getEdges()) {
             NodePos a = pos.get(e.getNode1());
             NodePos b = pos.get(e.getNode2());
@@ -485,7 +535,7 @@ public class Interface extends Canvas implements Runnable{
             int my = (int)(((a.y + b.y)/2.0 - camY) * zoom);
 
             int fontSize = (int)(12 * zoom); // tamanho base 12
-            fontSize = Math.max(fontSize, 6); // limite mínimo para não sumir
+            fontSize = Math.max(fontSize, 6); // limite minimo para nao sumir
             g.setFont(g.getFont().deriveFont((float) fontSize));
 
             if (e.getName().isEmpty()) {
@@ -499,7 +549,7 @@ public class Interface extends Canvas implements Runnable{
         }
 
         if (!showAGM) {
-            // Caminho crítico PERT
+            // Caminho critico PERT
             if (pertCriticalPath != null) {
                 g.setColor(Color.red);
                 for (Edge e : pertCriticalPath) {
@@ -552,11 +602,48 @@ public class Interface extends Canvas implements Runnable{
             }
 
             if (animatingAnts && animColony != null) {
-                // avança um passo da animação
-                boolean stillRunning = animColony.step();
+                //reduz a velocidade da animação
+                animFrameCounter++;
+                boolean stillRunning = true;
+                if (animFrameCounter % framesPerStep == 0) {
+                    stillRunning = animColony.step();
+                }
+
+                // atualiza animBestPath a partir do melhor encontrado na colônia (se houver)
+                if (animColony != null && animColony.getBestTourEver() != null) {
+                    Ant bestAnt = animColony.getBestTourEver();
+                    if (bestAnt.getTourLength() < animBestLength) {
+                        animBestLength = bestAnt.getTourLength();
+                        animBestPath = bestAnt.getTour();
+                    } else if (animBestPath == null) {
+                        animBestPath = bestAnt.getTour();
+                    }
+                }
+
+                // desenha o melhor caminho conhecido até agora
+                if (animBestPath != null && animBestPath.size() > 1) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    java.awt.Stroke oldStroke = g2.getStroke();
+                    g2.setColor(bestAntColor);
+                    g2.setStroke(new BasicStroke(2.0f));
+                    for (int i = 0; i < animBestPath.size() - 1; i++) {
+                        int a = animBestPath.get(i);
+                        int b = animBestPath.get(i + 1);
+                        NodePos p1 = pos.get(a);
+                        NodePos p2 = pos.get(b);
+
+                        int ax = (int)((p1.x - camX) * zoom);
+                        int ay = (int)((p1.y - camY) * zoom);
+                        int bx = (int)((p2.x - camX) * zoom);
+                        int by = (int)((p2.y - camY) * zoom);
+
+                        g2.drawLine(ax, ay, bx, by);
+                    }
+                    g2.setStroke(oldStroke);
+                }
 
                 // desenha cada formiga
-                g.setColor(new Color(255, 0, 0, 120)); // vermelho semi-transparente
+                g.setColor(animAntColor);
                 for (Ant ant : animColony.getAnts()) {
                     List<Integer> tour = ant.getTour();
                     for (int i = 0; i < tour.size() - 1; i++) {
@@ -574,25 +661,12 @@ public class Interface extends Canvas implements Runnable{
                     }
                 }
 
-                if (animColony != null && animColony.getBestTourEver() != null) {
-                g.setColor(Color.BLUE);
-                List<Integer> best = animColony.getBestTourEver().getTour();
-                for (int i = 0; i < best.size() - 1; i++) {
-                    int a = best.get(i);
-                    int b = best.get(i + 1);
-                    NodePos p1 = pos.get(a);
-                    NodePos p2 = pos.get(b);
-
-                    int ax = (int)((p1.x - camX) * zoom);
-                    int ay = (int)((p1.y - camY) * zoom);
-                    int bx = (int)((p2.x - camX) * zoom);
-                    int by = (int)((p2.y - camY) * zoom);
-
-                    g.drawLine(ax, ay, bx, by);
+                if (animFrameCounter % framesPerStep == 0 && !stillRunning) {
+                    if (animColony != null && animColony.getBestTourEver() != null) {
+                        bestAntPath = animColony.getBestTourEver().getTour();
+                    }
+                    animatingAnts = false;
                 }
-            }
-
-                if (!stillRunning) animatingAnts = false;
             }
         }
 
@@ -605,9 +679,9 @@ public class Interface extends Canvas implements Runnable{
             int screenY = (int)((n.y - camY) * zoom);
 
             if (showCameras && cameraNodes.contains(node)) {
-                g.setColor(Color.RED);
+                g.setColor(cameraNodeColor);
             } else {
-                g.setColor(Color.BLUE);
+                g.setColor(nodeColor);
             }
 
             int radius = (int)(10 * zoom);
@@ -622,7 +696,7 @@ public class Interface extends Canvas implements Runnable{
             FontMetrics fm = g.getFontMetrics();
             int textWidth = fm.stringWidth(text);
             int textHeight = fm.getAscent();
-            g.setColor(Color.yellow);
+            g.setColor(nodeTextColor);
             g.drawString(text, screenX - textWidth / 2, screenY + textHeight / 2);
         }
     }
@@ -633,34 +707,34 @@ public class Interface extends Canvas implements Runnable{
         g.setFont(g.getFont().deriveFont((float) 15)); // tamanho da font da HUD
         if (!showAGM) {
             if (pertCriticalPath != null) {
-                g.setColor(Color.black);
+                g.setColor(hudColor);
                 g.setFont(g.getFont().deriveFont((float) 12));
                 g.drawString("Critical path in red!", 20, HEIGHT - 35);
                 g.drawString("Total project duration: " + pertDuration, 20, HEIGHT - 20);
             }
 
             if (shortestPath != null && shortestPath.size() > 1) {
-                g.setColor(Color.black);
+                g.setColor(hudColor);
                 g.drawString("Total cost: " + shortestCost, 20, HEIGHT - 20);
             }
 
             if(showMaxFlow){
-                g.setColor(Color.black);
+                g.setColor(hudColor);
                 g.drawString("Max Flow: " + this.maxFlow, 20, HEIGHT - 20);
             }
 
              if(showCameras){
-                g.setColor(Color.black);
+                g.setColor(hudColor);
                 g.drawString("Minimum cover: " + cameraNodes.size(), 20, HEIGHT - 20);
             }
 
             if(pertCriticalPath == null && shortestPath == null && !showMaxFlow && !showCameras){
-                g.setColor(Color.black);
+                g.setColor(hudColor);
                 g.drawString("Number of edges: " + graph.getQuantity(), 20, HEIGHT - 35);
                 g.drawString("Number of nodes: " + graph.getNodesNum(), 20, HEIGHT - 20);
             }
         } else {
-            g.setColor(Color.black);
+            g.setColor(hudColor);
             g.drawString("Total Cost: " + agmGraph.getTotalWeight(), 20, HEIGHT - 20);
         }
 
@@ -677,7 +751,7 @@ public class Interface extends Canvas implements Runnable{
 
         int w = getWidth();
         int h = getHeight();
-        g.setColor(Color.white);
+        g.setColor(backgroundColor);
         g.fillRect(0, 0, w, h);
 
         // >>>>>adicionar oque sera rederizado:<<<<<
