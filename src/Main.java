@@ -6,13 +6,14 @@
 
 package src;
 
-import java.io.IOException;
 import java.awt.Color;
-
+import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import src.Core.Graph;
+import src.Ui.Interface;
 
 public class Main {
     public static void main(String[] args) {

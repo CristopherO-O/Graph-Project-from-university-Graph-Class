@@ -1,5 +1,5 @@
 compile e rode no diretorio do Graph Java
-o grafo deve estar contido no Graph.txt o no Graph.gml para funcionar
+o grafo deve estar contido no Graph.txt ou no Graph.gml para funcionar!
 para compilar:
     javac -d bin src/*.java
 
@@ -7,20 +7,23 @@ para executar:
     java -cp bin src.Main
 ---------------------------------------------------------------------------------
 funções:
--Carrega o grafo de um arquivo e o desenha na tela de forma circular.
+-Carrega o grafo de um arquivo e o desenha na tela de forma circular caso menos de 100 nós.
 -Arrastar e reposicionar os nos
 -botao inserir aresta: insere nova aresta e pode adicionar novos nos
 -botao dijkistra: calcula o menor caminho entre dois pontos
 -botao PERT: Calcula PERT e exibe o caminho critico e o menor e maior tempo em cada no
--botao Limpar caminho: apaga os resultados como do dijkstra, PERT e AGM
--botao agm que mostra a arvore geradora minima e peso
--botao FordFulkerson para calcular fluxo maximo
+-botao Limpar caminho: apaga os resultados como do dijkstra, PERT e AGM...
+-botao agm: que mostra a arvore geradora minima e peso
+-botao FordFulkerson: para calcular fluxo maximo
 -botão Minimum Cover
 -botão de colonia de formiga instantanea
 -botão de colonia de formiga animada
 ---------------------------------------------------------------------------------
 Atualizações:
--dark mode 
--correção no algoritimo de animar formiga
+-mudança no carregamento do grafo, agora ele carrega tambem txt em formato de matriz de adjacencia
+ele identifica o formato (lista de aresta ou matriz de adjacencia) automaticamente
+-separação do algoritimo de dijkistra da classe Graph
 ---------------------------------------------------------------------------------
-Saida de cada iteração no terminal, caminho no visual
+Instrução:
+para essa atividade ja contem um dos grafos passados no slide no txt, basta carregar o txt
+e testar os botões ant
