@@ -181,6 +181,13 @@ public class GraphRenderer {
             drawPath(g2, ui.getShortestPath());
         }
 
+        // Desenha o Ciclo Hamiltoniano (Farthest Insertion)
+        if (ui.getHamiltonianCycle() != null && ui.getHamiltonianCycle().size() > 1) {
+            // Usamos uma cor distinta, como verde, para o ciclo
+            g2.setColor(new Color(0, 180, 0)); 
+            drawPath(g2, ui.getHamiltonianCycle());
+        }
+
         // Desenha melhor caminho formiga instantaneo
         if (ui.getBestAntPath() != null && ui.getBestAntPath().size() > 1) {
             g2.setColor(Color.RED);
@@ -310,21 +317,31 @@ public class GraphRenderer {
         g.setFont(g.getFont().deriveFont((float) 12));
 
         if (!ui.isShowAGM()) {
+
             if (ui.getPertCriticalPath() != null) {
                 g.drawString("Critical path in red!", 20, ui.HEIGHT - 35);
                 g.drawString("Total project duration: " + ui.getPertDuration(), 20, ui.HEIGHT - 20);
+
             } else if (ui.getShortestPath() != null && ui.getShortestPath().size() > 1) {
                 g.drawString("Total cost: " + ui.getShortestCost(), 20, ui.HEIGHT - 20);
-            } else if (ui.isShowMaxFlow()) {
+
+            } else if (ui.getHamiltonianCycle() != null && ui.getHamiltonianCycle().size() > 1) { // NOVO ESTADO
+                g.drawString("Total Cost: " + ui.getHamiltonianCost(), 20, ui.HEIGHT - 20);
+                g.drawString("" + ui.getFIMetrics(), 20, ui.HEIGHT - 40);
+
+            }else if (ui.isShowMaxFlow()) {
                 g.drawString("Max Flow: " + ui.getMaxFlow(), 20, ui.HEIGHT - 20);
+
             } else if (ui.isShowCameras()) {
                 g.drawString("Minimum cover: " + ui.getCameraNodes().size(), 20, ui.HEIGHT - 20);
+
             } else {
                 g.drawString("Number of edges: " + ui.getGraph().getQuantity(), 20, ui.HEIGHT - 35);
                 g.drawString("Number of nodes: " + ui.getGraph().getNodesNum(), 20, ui.HEIGHT - 20);
+
             }
-        } else {
-            g.drawString("Total Cost (AGM): " + ui.getAgmGraph().getTotalWeight(), 20, ui.HEIGHT - 20);
-        }
+            } else {
+                g.drawString("Total Cost (AGM): " + ui.getAgmGraph().getTotalWeight(), 20, ui.HEIGHT - 20);
+            }
     }
 }

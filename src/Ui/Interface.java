@@ -71,6 +71,11 @@ public class Interface extends Canvas implements Runnable {
     private Set<Integer> cameraNodes = new HashSet<>();
     private boolean showCameras = false;
 
+    // Ciclo Hamiltoniano
+    private List<Integer> hamiltonianCycle = null;
+    private int hamiltonianCost = -1;
+    private String FIMetrics;
+
     // melhor caminho da formiga
     private List<Integer> bestAntPath = null;
     private AntColony animColony = null;
@@ -184,6 +189,9 @@ public class Interface extends Canvas implements Runnable {
     public boolean isShowMaxFlow() { return showMaxFlow; }
     public int getMaxFlow() { return maxFlow; }
     public Graph getAgmGraph() { return agmGraph; }
+    public List<Integer> getHamiltonianCycle() { return hamiltonianCycle; } 
+    public int getHamiltonianCost() { return hamiltonianCost; }
+    public String getFIMetrics() { return FIMetrics; }
 
 
     // Métodos setters para modificação pelos controladores
@@ -342,6 +350,8 @@ public class Interface extends Canvas implements Runnable {
         animColony = null;
         animBestPath = null;
         animBestLength = Double.POSITIVE_INFINITY;
+        hamiltonianCycle = null; 
+        hamiltonianCost = -1;
     }
 
     // ----- botao dijkstra -----
@@ -443,6 +453,7 @@ public class Interface extends Canvas implements Runnable {
 
     // ----- botao ant instantaneo -----
     public void executarAntInstantaneo() {
+        clearPath();
         executarAntInstantaneo(100, 1.0, 3.0, 0.5, 100, 0.00001);
     }
 
@@ -481,6 +492,34 @@ public class Interface extends Canvas implements Runnable {
         // reset estado da melhor rota animada
         animBestPath = null;
         animBestLength = Double.POSITIVE_INFINITY;
+    }
+
+    // ----- Botão Ciclo Hamiltoniano (Farthest Insertion) -----
+    public void calcularHamiltonianCycle() {
+
+        clearPath();
+
+        try {
+            src.Algorithms.FarthestInsertion fi = new src.Algorithms.FarthestInsertion(graph);
+            src.Algorithms.PathResult result = fi.findHamiltonianCycle(); // sem parâmetro
+
+            hamiltonianCycle = result.path;
+            hamiltonianCost = result.totalCost;
+            FIMetrics = result.metrics.toString();
+
+            if (hamiltonianCycle == null || hamiltonianCost == Graph.INF) {
+                javax.swing.JOptionPane.showMessageDialog(null,
+                        "Ciclo Hamiltoniano não encontrado (grafo incompleto ou inacessível).");
+            } else {
+                System.out.println("Ciclo Hamiltoniano (Farthest Insertion): " + hamiltonianCycle);
+                System.out.println("Custo Total: " + hamiltonianCost);
+                repaint();
+            }
+
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Erro no cálculo do ciclo: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Tema escuro: true = dark, false = light

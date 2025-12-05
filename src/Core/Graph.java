@@ -18,6 +18,7 @@ public class Graph {
     private int nodesNum;
     private int quantity;
     private ArrayList<Edge> edges;
+    public static final int INF = Integer.MAX_VALUE / 2;
 
     public Graph(int nodesNum) {
         this.nodesNum = nodesNum;
@@ -30,6 +31,14 @@ public class Graph {
     public int getNodesNum(){ return this.nodesNum; }
     public int getQuantity(){ return this.quantity; }
     public List<Edge> getEdges() { return Collections.unmodifiableList(edges); }
+    public int getEdgeWeight(int u, int v) {
+        for (Edge e : edges) {
+            if (e.getNode1() == u && e.getNode2() == v) {
+                return e.getWeight();
+            }
+        }
+        return INF; // Retorna INF se não houver aresta
+    }
 
     // ----- setters -----
     public void setNodesNum(int x){ this.nodesNum = x; }

@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import src.Algorithms.CompareFIandACO;
 import src.Core.Graph;
 import src.Ui.Interface;
 
@@ -45,7 +46,7 @@ public class Main {
                 System.exit(0);
             }
 
-
+            final Graph gForLambda = g;
 
             Interface inter = new Interface(g);
             javax.swing.JFrame frame = new javax.swing.JFrame();
@@ -83,6 +84,11 @@ public class Main {
             javax.swing.JButton btnCOVER = new javax.swing.JButton("Minimum Cover");
             btnCOVER.addActionListener(e -> inter.calcularCobertura());
             topPanel.add(btnCOVER);
+
+            // Farthest Insertion
+            javax.swing.JButton btnHamiltonian = new javax.swing.JButton("Farthest Insertion");
+            btnHamiltonian.addActionListener(e -> inter.calcularHamiltonianCycle());
+            topPanel.add(btnHamiltonian);
 
             // calcula o algoritimo instantaneamente
             JButton btnANT = new JButton("Instant Ant");
@@ -128,6 +134,20 @@ public class Main {
             javax.swing.JButton btnClear = new javax.swing.JButton("Clear Results");
             btnClear.addActionListener(e -> inter.clearPath());
             bottomPanel.add(btnClear);
+
+            // Botão Compare FI vs ACO
+            javax.swing.JButton btnCompare = new javax.swing.JButton("Compare FI vs ACO");
+            btnCompare.addActionListener(e -> {
+
+                try {
+                    CompareFIandACO cmp = new CompareFIandACO(gForLambda);
+                    cmp.runComparison();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao comparar algoritmos:\n" + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            });
+            bottomPanel.add(btnCompare);
 
             // Adiciona o em baixo da janela
             frame.add(bottomPanel, java.awt.BorderLayout.SOUTH);

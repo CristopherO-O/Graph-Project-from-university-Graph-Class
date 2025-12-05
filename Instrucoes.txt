@@ -16,14 +16,16 @@ funções:
 -botao agm: que mostra a arvore geradora minima e peso
 -botao FordFulkerson: para calcular fluxo maximo
 -botão Minimum Cover
+-botão Farthest insertion
 -botão de colonia de formiga instantanea
 -botão de colonia de formiga animada
 ---------------------------------------------------------------------------------
 Atualizações:
--mudança no carregamento do grafo, agora ele carrega tambem txt em formato de matriz de adjacencia
-ele identifica o formato (lista de aresta ou matriz de adjacencia) automaticamente
--separação do algoritimo de dijkistra da classe Graph
+- algoritimo de inserção do mais distante e seu respectivo botão 
+- alteração do algoritimo FI e AOC para ter o metrics e conseguir extrair informações de desempenho para analise comparativa
 ---------------------------------------------------------------------------------
 Instrução:
-para essa atividade ja contem um dos grafos passados no slide no txt, basta carregar o txt
-e testar os botões ant
+abrir com o Txt e apertar o botão Farthest Insertion e definir o nó de origem
+tambem tem o botão para comparar o FI com o ACO na parte inferior da janela ambos os codigos são executados 30 vezes
+o aco seria 30x100 ja que ele roda por 100 iterações
+o resultado sai no terminal
